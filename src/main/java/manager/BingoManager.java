@@ -30,7 +30,7 @@ public class BingoManager {
             }
         }
         //String player1, String player2
-        PartidaBingoMultijugador game = new PartidaBingoMultijugador(player, null);
+        BingoMultijugador game = new BingoMultijugador(player, null);
         games.put(game.getGameId(), game);
         waitingPlayers.put(player, game.getGameId());
         return game;
@@ -42,12 +42,12 @@ public class BingoManager {
      *
      * @param player the name of the player
      */
-   public synchronized PartidaMultijugador abandonarJuego(String player) {
+   public synchronized BingoMultijugador abandonarJuego(String player) {
         String gameId = getGameByPlayer(player) != null ? getGameByPlayer(player).getGameId() : null;
        Integer dimension;
         if (gameId != null) {
             waitingPlayers.remove(player);
-            PartidaBingoMultijugador game = games.get(gameId);
+            BingoMultijugador game = games.get(gameId);
             if (player.equals(game.getNombreJugador())) {
                 if (game.getNombreJugador2() != null) {
                     game.setNombreJugador(game.getNombreJugador2());
@@ -79,7 +79,7 @@ public class BingoManager {
      * @param gameId the ID of the game
      * @return the Bingo game with the given game ID, or null if no such game exists
      */
-    public PartidaMultijugador getGame(String gameId) {
+    public BingoMultijugador getGame(String gameId) {
         return games.get(gameId);
     }
 
@@ -89,7 +89,7 @@ public class BingoManager {
      * @param player the name of the player
      * @return the Bingo game the given player is in, or null if the player is not in a game
      */
-    public PartidaMultijugador getGameByPlayer(String player) {
+    public BingoMultijugador getGameByPlayer(String player) {
         return games.values().stream().filter(game -> game.getNombreJugador().equals(player) || (game.getNombreJugador2() != null &&
                 game.getNombreJugador2().equals(player))).findFirst().orElse(null);
     }
@@ -99,7 +99,7 @@ public class BingoManager {
      *
      * @param gameId the ID of the game to remove
      */
-    public void EliminarJuego(String gameId) {
+    public void eliminarJuego(String gameId) {
         games.remove(gameId);
     }
 

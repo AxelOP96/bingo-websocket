@@ -1,16 +1,21 @@
-package com.tallerwebi.presentacion;
+package controller;
 
-import com.tallerwebi.dominio.BingoManager;
-import com.tallerwebi.dominio.PartidaBingoMultijugador;
-import com.tallerwebi.dominio.dto.JoinMensaje;
-import com.tallerwebi.dominio.dto.MensajeBingo;
-import com.tallerwebi.dominio.dto.MensajeJugador;
+import manager.BingoManager;
+import model.BingoMultijugador;
+import model.dto.JoinMensaje;
+import model.dto.MensajeBingo;
+import model.dto.MensajeJugador;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+
+import enumeration.EstadoJuego;
 
 public class ControladorMensajes {
 
@@ -24,7 +29,7 @@ public class ControladorMensajes {
     @MessageMapping("/game.join")
     @SendTo("/topic/game.state")
     public Object joinGame(@Payload JoinMensaje message, SimpMessageHeaderAccessor headerAccessor) {
-        PartidaBingoMultijugador game = BingoManager.joinGame(message.getPlayer());
+        BingoMultijugador game = bingoManager.joinGame(message.getPlayer());
         if (game == null) {
             MensajeBingo errorMessage = new MensajeBingo();
             errorMessage.setType("error");
@@ -48,7 +53,7 @@ public class ControladorMensajes {
      */
     @MessageMapping("/game.leave")
     public void leaveGame(@Payload MensajeJugador message) {
-        TicTacToe game = BingoManager.abandonarJuego(message.getPlayer()); //leaveGame
+        BingoMultijugador game = bingoManager.abandonarJuego(message.getPlayer()); //leaveGame
         if (game != null) {
             MensajeBingo gameMessage = gameToMessage(game);
             gameMessage.setType("game.left");
@@ -63,23 +68,23 @@ public class ControladorMensajes {
      *
      * @param message the message from the client containing the player's name, game ID, and move
      */
-    /*@MessageMapping("/game.move")
+    @MessageMapping("/game.move")
     public void makeMove(@Payload MensajeBingo message) {
         String player = message.getSender();
         String gameId = message.getGameId();
         int move = message.getMove();
-        TicTacToe game = ticTacToeManager.getGame(gameId);
+        BingoMultijugador game = bingoManager.getGame(gameId);
 
         if (game == null || game.isGameOver()) {
-            TicTacToeMessage errorMessage = new TicTacToeMessage();
+            MensajeBingo errorMessage = new MensajeBingo();
             errorMessage.setType("error");
             errorMessage.setContent("Game not found or is already over.");
             this.messagingTemplate.convertAndSend("/topic/game." + gameId, errorMessage);
             return;
         }
 
-        if (game.getGameState().equals(GameState.WAITING_FOR_PLAYER)) {
-            TicTacToeMessage errorMessage = new TicTacToeMessage();
+        if (game.getGameState().equals(EstadoJuego.WAITING_FOR_PLAYER)) {
+            MensajeBingo errorMessage = new MensajeBingo();
             errorMessage.setType("error");
             errorMessage.setContent("Game is waiting for another player to join.");
             this.messagingTemplate.convertAndSend("/topic/game." + gameId, errorMessage);
@@ -89,15 +94,15 @@ public class ControladorMensajes {
         if (game.getTurn().equals(player)) {
             game.makeMove(player, move);
 
-            TicTacToeMessage gameStateMessage = new TicTacToeMessage(game);
+            MensajeBingo gameStateMessage = new MensajeBingo(game);
             gameStateMessage.setType("game.move");
             this.messagingTemplate.convertAndSend("/topic/game." + gameId, gameStateMessage);
 
             if (game.isGameOver()) {
-                TicTacToeMessage gameOverMessage = gameToMessage(game);
+                MensajeBingo gameOverMessage = gameToMessage(game);
                 gameOverMessage.setType("game.gameOver");
                 this.messagingTemplate.convertAndSend("/topic/game." + gameId, gameOverMessage);
-                ticTacToeManager.removeGame(gameId);
+                bingoManager.eliminarJuego(gameId);
             }
         }
     }
@@ -107,42 +112,42 @@ public class ControladorMensajes {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         String gameId = headerAccessor.getSessionAttributes().get("gameId").toString();
         String player = headerAccessor.getSessionAttributes().get("player").toString();
-        TicTacToe game = ticTacToeManager.getGame(gameId);
+        BingoMultijugador game = bingoManager.getGame(gameId);
         if (game != null) {
-            if (game.getPlayer1().equals(player)) {
-                game.setPlayer1(null);
-                if (game.getPlayer2() != null) {
-                    game.setGameState(GameState.PLAYER2_WON);
-                    game.setWinner(game.getPlayer2());
+            if (game.getNombreJugador().equals(player)) {
+                game.setNombreJugador(null);
+                if (game.getNombreJugador2() != null) {
+                    game.setGameState(EstadoJuego.PLAYER2_WON);
+                    game.setWinner(game.getNombreJugador2());
                 } else {
-                    ticTacToeManager.removeGame(gameId);
+                    bingoManager.eliminarJuego(gameId);
                 }
-            } else if (game.getPlayer2() != null && game.getPlayer2().equals(player)) {
-                game.setPlayer2(null);
-                if (game.getPlayer1() != null) {
-                    game.setGameState(GameState.PLAYER1_WON);
-                    game.setWinner(game.getPlayer1());
+            } else if (game.getNombreJugador2() != null && game.getNombreJugador2().equals(player)) {
+                game.setNombreJugador2(null);
+                if (game.getNombreJugador() != null) {
+                    game.setGameState(EstadoJuego.PLAYER1_WON);
+                    game.setWinner(game.getNombreJugador());
                 } else {
-                    ticTacToeManager.removeGame(gameId);
+                    bingoManager.eliminarJuego(gameId);
                 }
             }
-            TicTacToeMessage gameMessage = gameToMessage(game);
+            MensajeBingo gameMessage = gameToMessage(game);
             gameMessage.setType("game.gameOver");
             messagingTemplate.convertAndSend("/topic/game." + gameId, gameMessage);
-            ticTacToeManager.removeGame(gameId);
+            bingoManager.eliminarJuego(gameId);
         }
     }
 
-    private BingoMessage gameToMessage(TicTacToe game) {
-        TicTacToeMessage message = new TicTacToeMessage();
+    private MensajeBingo gameToMessage(BingoMultijugador game) {
+        MensajeBingo message = new MensajeBingo();
         message.setGameId(game.getGameId());
-        message.setPlayer1(game.getPlayer1());
-        message.setPlayer2(game.getPlayer2());
+        message.setPlayer1(game.getNombreJugador());
+        message.setPlayer2(game.getNombreJugador2());
         message.setBoard(game.getBoard());
         message.setTurn(game.getTurn());
         message.setGameState(game.getGameState());
         message.setWinner(game.getWinner());
         return message;
     }
-*/
+
 }
