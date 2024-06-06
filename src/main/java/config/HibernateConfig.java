@@ -1,4 +1,4 @@
-package com.tallerwebi.config;
+package config;
 
 import org.hibernate.SessionFactory;
 import org.springframework.context.annotation.Bean;
