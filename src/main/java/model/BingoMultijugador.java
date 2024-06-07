@@ -3,15 +3,17 @@ package model;
 import enumeration.EstadoJuego;
 import java.util.Objects;
 import java.util.UUID;
-
+import model.*;
 /**
  * Class representing a Multiplayer Bingo game.
  *
  * @author Axel Leguero
  */
 public class BingoMultijugador {
+    private final ServicioBingo servicioBingo;
     private String gameId;
-    private String[][] board;
+    private CartonBingo cartonJugador1;
+    private CartonBingo cartonJugador2;
     private String nombreJugador;
     private String nombreJugador2;
     private String winner;
@@ -19,25 +21,17 @@ public class BingoMultijugador {
     private EstadoJuego gameState;
 
     public BingoMultijugador(String player1, String player2) {
+        servicioBingo = new ServicioBingoImpl();
         this.gameId = UUID.randomUUID().toString();
         this.nombreJugador = player1;
         this.nombreJugador2 = player2;
         this.turn = player1;
-        this.board = new String[3][3];
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                this.board[i][j] = " ";
-            }
-        }
+        this.cartonJugador1 = servicioBingo.generarCarton(5);
+        this.cartonJugador2 = servicioBingo.generarCarton(5);
         gameState = EstadoJuego.WAITING_FOR_PLAYER;
     }
 
-    /**
-     * Makes a move in the specified position on the board.
-     *
-     * @param player the name of the player making the move
-     * @param move   the position of the move
-     */
+
     // public void makeMove(String player, int move) {
     //     int row = move / 3;
     //     int col = move % 3;
@@ -53,33 +47,19 @@ public class BingoMultijugador {
      * Check if there is a winner. If a winning combination is found,
      * the winner is set to the corresponding player.
      */
-   /*  private void checkWinner() {
-        for (int i = 0; i < 3; i++) {
-            if (Objects.equals(board[i][0], board[i][1]) && Objects.equals(board[i][0], board[i][2])) {
-                if (!Objects.equals(board[i][0], " ")) {
-                    setWinner(Objects.equals(board[i][0], player1) ? player1 : player2);
-                    return;
-                }
-            }
-        }
+    private void checkWinner() {
 
-        for (int i = 0; i < 3; i++) {
-            if (Objects.equals(board[0][i], board[1][i]) && Objects.equals(board[0][i], board[2][i])) {
-                if (!Objects.equals(board[0][i], " ")) {
-                    setWinner(Objects.equals(board[0][i], player1) ? player1 : player2);
-                    return;
-                }
-            }
+        if(servicioBingo.linea(servicioBingo.getNumerosMarcadosEnElCarton(), cartonJugador1)){
+            setWinner(nombreJugador);
+            return;
         }
-
-        if (Objects.equals(board[0][0], board[1][1]) && Objects.equals(board[0][0], board[2][2])) {
-            if (!Objects.equals(board[0][0], " ")) {
-                setWinner(Objects.equals(board[0][0], player1) ? player1 : player2);
-                return;
-            }
+        if(servicioBingo.linea(servicioBingo.getNumerosMarcadosEnElCarton(), cartonJugador2)){
+            setWinner(nombreJugador2);
+            return;
         }
     }
- */
+
+
     /**
      * Updates the game state based on the current state of the game.
      */
@@ -93,48 +73,19 @@ public class BingoMultijugador {
     //     }
     // }
 
-    /**
-     * Check if the board is full.
-     *
-     *  true if the board is full, false otherwise
-     */
-    // private boolean isBoardFull() {
-    //     for (int i = 0; i < 3; i++) {
-    //         for (int j = 0; j < 3; j++) {
-    //             if (Objects.equals(board[i][j], " ")) {
-    //                 return false;
-    //             }
-    //         }
-    //     }
-    //     return true;
-    // }
 
-    /**
-     * Check if the game is over.
-     *
-     *  true if the game is over, false otherwise
-     */
-    /* public boolean isGameOver() {
-        return winner != null || isBoardFull();
+
+    public boolean isGameOver() {
+        return winner != null || servicioBingo.getSeHizobingo() == true;
     }
- */
-    /**
-     * Getters and Setters
-     */
+
+
     public String getGameId() {
         return gameId;
     }
 
     public void setGameId(String gameId) {
         this.gameId = gameId;
-    }
-
-    public String[][] getBoard() {
-        return board;
-    }
-
-    public void setBoard(String[][] board) {
-        this.board = board;
     }
 
     public String getNombreJugador() {

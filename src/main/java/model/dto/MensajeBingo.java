@@ -24,7 +24,7 @@ public class MensajeBingo implements Mensaje{
         this.player2 = game.getNombreJugador2();
         this.winner = game.getWinner();
         this.turn = game.getTurn();
-        this.board = game.getBoard();
+        //this.board = game.getBoard();
         this.gameState = game.getGameState();
     }
 

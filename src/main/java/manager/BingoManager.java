@@ -44,7 +44,7 @@ public class BingoManager {
      */
    public synchronized BingoMultijugador abandonarJuego(String player) {
         String gameId = getGameByPlayer(player) != null ? getGameByPlayer(player).getGameId() : null;
-       Integer dimension;
+        Integer dimension;
         if (gameId != null) {
             waitingPlayers.remove(player);
             BingoMultijugador game = games.get(gameId);
@@ -53,9 +53,9 @@ public class BingoManager {
                     game.setNombreJugador(game.getNombreJugador2());
                     game.setNombreJugador2(null);
                     game.setGameState(EstadoJuego.WAITING_FOR_PLAYER);
-                    dimension = game.getDimension();
+                    //dimension = game.getDimension();
 
-                    game.setCartonJugador1(game.servicioBingo.generarCarton(dimension)); //= ;
+                    //game.setCartonJugador1(game.servicioBingo.generarCarton(dimension)); //= ;
                     waitingPlayers.put(game.getNombreJugador(), game.getGameId());
                 } else {
                     games.remove(gameId);
@@ -64,8 +64,8 @@ public class BingoManager {
             } else if (player.equals(game.getNombreJugador2())) {
                 game.setNombreJugador2(null);
                 game.setGameState(EstadoJuego.WAITING_FOR_PLAYER);
-                dimension = game.getDimension();
-                game.setCartonJugador2(game.servicioBingo.generarCarton(dimension));
+                //dimension = game.getDimension();
+                //game.setCartonJugador2(game.servicioBingo.generarCarton(dimension));
                 waitingPlayers.put(game.getNombreJugador(), game.getGameId());
             }
             return game;

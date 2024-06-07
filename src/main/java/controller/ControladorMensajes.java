@@ -92,7 +92,7 @@ public class ControladorMensajes {
         }
 
         if (game.getTurn().equals(player)) {
-            game.makeMove(player, move);
+            //game.makeMove(player, move);
 
             MensajeBingo gameStateMessage = new MensajeBingo(game);
             gameStateMessage.setType("game.move");
@@ -143,7 +143,6 @@ public class ControladorMensajes {
         message.setGameId(game.getGameId());
         message.setPlayer1(game.getNombreJugador());
         message.setPlayer2(game.getNombreJugador2());
-        message.setBoard(game.getBoard());
         message.setTurn(game.getTurn());
         message.setGameState(game.getGameState());
         message.setWinner(game.getWinner());

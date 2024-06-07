@@ -1,0 +1,17 @@
+enumeration\EstadoJuego.class
+model\CartonBingo.class
+model\ServicioBingo.class
+config\DatabaseInitializationConfig.class
+model\dto\MensajeJugador.class
+model\dto\Mensaje.class
+model\ServicioBingoImpl.class
+model\dto\JoinMensaje.class
+config\HibernateConfig.class
+model\dto\MensajeBingo.class
+manager\BingoManager.class
+model\BingoMultijugador.class
+controller\ControladorBingoWebsocket.class
+config\WebSocketConfig.class
+config\SpringWebConfig.class
+controller\ControladorMensajes.class
+controller\ControladorBingoWebsocket$BingoMessage.class
